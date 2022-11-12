@@ -1,8 +1,7 @@
 # SASA
-SASA is a scalable and automatic stencil acceleration framework on modern HBM-based FPGAs. It automatically generates exploits the best spatial  and temporal parallelism configuration on cloud FPGA platform. If you use SASA in your research, please cite our paper:
+SASA is a scalable and automatic stencil acceleration framework on modern HBM-based FPGAs. It automatically parses a stencil DSL, exploits the best spatial and temporal parallelism configuration on cloud FPGA platforms, and generates the optimal FPGA design in Vitis HLS with TAPA-based floorplanning optimization. If you use SASA in your research, please cite our paper:
 
-> Xingyu Tian, Zhifan Ye, Alec Lu, Licheng Guo, Yuze Chi, and Zhenman Fang. 2022. SASA: A Scalable and Automatic Stencil Acceleration Framework for Optimized Hybrid Spatial and Temporal Parallelism on HBM-based FPGAs.  arXiv:2208.10770
-(To be updated)
+> Xingyu Tian, Zhifan Ye, Alec Lu, Licheng Guo, Yuze Chi, and Zhenman Fang. 2022. SASA: A Scalable and Automatic Stencil Acceleration Framework for Optimized Hybrid Spatial and Temporal Parallelism on HBM-based FPGAs. Accepted by ACM Transactions on Reconfigurable Technology and Systems (TRETS 2022).
 
 ## Download 
 
@@ -18,11 +17,11 @@ git clone https://github.com/SFU-HiAccel/SASA.git
 2. Software tools:
 	+ HLS tool:
 		+ Vitis 2020.1, 2021.1 or 2021.2
-		+ Xilinx Runtime (XRT)
+		+ Xilinx Runtime (XRT) corresponding version with Vitis
 	+ Python 3.6+
 	+ [TAPA](https://github.com/UCLA-VAST/tapa)
 	
-## SASA DLS Example
+## SASA DLS Example (stencil.dsl)
 ```
 # Kernel name
 kernel: JACOBI2D
@@ -46,10 +45,10 @@ boarder: streaming
 
 ## Usage 
 
-SASA takes high-level description dsl as inputs, automatically explore space oif spatial and temporal parallelism.
+SASA takes high-level DSL description as inputs, automatically explores the best spatial and temporal parallelism.
 
 1. Generate stencil design with the best optimization: 
-	+ Run: `python3 exploration.py --src stencil.dsl `
+	+ Run: `python3 exploration.py --src stencil.dsl`
 
 2. Generate custmized stencil design
 	+ Generate the both host code and kenrel code
@@ -68,5 +67,5 @@ SASA takes high-level description dsl as inputs, automatically explore space oif
 ## Contact
 + [Xingyu Tian](http://www.sfu.ca/~xingyut/), Phd Student 
 + HiAccel Lab, Simon Fraser University (SFU)
-+ Supervisor: [Dr. Zhenman Fang](http://www.sfu.ca/~zhenman/group.html)
++ Supervisor: [Dr. Zhenman Fang] (http://www.sfu.ca/~zhenman/group.html)
 + Email: xingyu_tian@sfu.ca
