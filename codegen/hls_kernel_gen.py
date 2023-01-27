@@ -106,14 +106,14 @@ def _print_backbone_tapa(stencil: core.Stencil, printer: codegen_utils.Printer, 
     if stage == 'start':
         for input_var in stencil.input_vars:
             input_def.append('tapa::istream<INTERFACE_WIDTH>& %s' % input_var) 
-        input_def.append('hls::stream<INTERFACE_WIDTH>& %s' % stencil.output_var)
+        input_def.append('tapa::ostream<INTERFACE_WIDTH>& %s' % stencil.output_var)
     if stage == 'mid':
         for input_var in stencil.input_vars:
-            input_def.append('hls::stream<INTERFACE_WIDTH>& %s' % input_var) 
-        input_def.append('hls::stream<INTERFACE_WIDTH>& %s' % stencil.output_var)
+            input_def.append('tapa::istream<INTERFACE_WIDTH>& %s' % input_var) 
+        input_def.append('tapa::ostream<INTERFACE_WIDTH>& %s' % stencil.output_var)
     if stage == 'end':
         for input_var in stencil.input_vars:
-            input_def.append('hls::stream<INTERFACE_WIDTH>& %s' % input_var) 
+            input_def.append('tapa::istream<INTERFACE_WIDTH>& %s' % input_var) 
         input_def.append('tapa::ostream<INTERFACE_WIDTH>& %s' % stencil.output_var)
 
     for scalar in stencil.scalar_vars:
@@ -122,7 +122,7 @@ def _print_backbone_tapa(stencil: core.Stencil, printer: codegen_utils.Printer, 
     # input_def.append('int useless')
     input_def.append('int iters')
     if stage != 'uni':
-        input_def.append('int skip')
+        input_def.append('int stage_num')
 
     if stage == 'uni': 
         printer.print_func('void %s' % stencil.app_name, input_def)
@@ -135,9 +135,12 @@ def _print_backbone_tapa(stencil: core.Stencil, printer: codegen_utils.Printer, 
         printer.println()
 
     if stage == 'uni':
-    # with printer.for_('int iter_idx = iters', 'iter_idx > 0', 'iter_idx--'):
         printer.println('for(int iter_idx = iters; iter_idx > 0; iter_idx--)')
         printer.do_scope()
+    else:
+        printer.println('for(int iter_idx = 0; iter_idx < ITERATION; iter_idx+= STAGE_COUNT)')
+        printer.do_scope()
+        printer.println('bool skip = iter_idx + stage_num >= iters;')
 
     for buffer_instance in input_buffer_configs.values():
         buffer_instance.print_init_buffer_from_stream(printer)   #this
@@ -147,12 +150,15 @@ def _print_backbone_tapa(stencil: core.Stencil, printer: codegen_utils.Printer, 
         if stage == 'uni':
             append = '(TOP_APPEND+BOTTOM_APPEND)*(iter_idx-1)'
         else:
-            append = '(TOP_APPEND+BOTTOM_APPEND)*(iters-1)'
+            append = '(TOP_APPEND+BOTTOM_APPEND)*(iters - iter_idx - stage_num - 1)'
+            # append = '(TOP_APPEND+BOTTOM_APPEND)*(iters-1)'
     else:
         if stage == 'uni':
             append = '0'
         else:
-            append = '(TOP_APPEND+BOTTOM_APPEND)*(iters-1)'
+            # Here iters is the STAGE_COUNT
+            # append = '(TOP_APPEND+BOTTOM_APPEND)*(iters-1)'
+            append = '(TOP_APPEND+BOTTOM_APPEND)*(STAGE_COUNT - stage_num - 1)'
             
     all_refs = stencil.all_refs
     all_ports = []
@@ -224,15 +230,17 @@ def _print_backbone_tapa(stencil: core.Stencil, printer: codegen_utils.Printer, 
 
         for buffer_instance in input_buffer_configs.values():
             buffer_instance.print_data_movement_from_stream(printer)
-        printer.println()
+        
+    printer.println()
 
     if stencil.iterate or stencil.repeat_count > 1:
         for buffer_instance in input_buffer_configs.values():
             buffer_instance.print_pop_out(printer)
     
-    if stage == 'uni':
-        printer.un_scope()
+    # if stage == 'uni':
+        # printer.un_scope()
         # printer.println('}')
+    printer.un_scope()
 
     printer.println('return;')
     printer.un_scope()
@@ -251,31 +259,31 @@ def _print_multistage_backbone(stencil: core.Stencil, printer: codegen_utils.Pri
     #if stencil.boarder_type == 'overlap':
     printer.print_func('void %s' % stencil.app_name, input_def)
     printer.do_scope('multi-stage backbone definition')
-    printer.println('#pragma HLS dataflow')
 
     mid_instance_count = stencil.repeat_count - 1
-    printer.println('hls::stream<INTERFACE_WIDTH> '
+    printer.println('tapa::stream<INTERFACE_WIDTH> '
                     + ', '.join('temp_out_%d' % i for i in range(mid_instance_count))
                     + ';')
 
+    printer.println("tapa::task()")
+    printer.do_indent()
     if stencil.boarder_type == 'overlap':
-        with printer.for_('int i = 0', 'i < iters', 'i+=STAGE_COUNT'):
-            parameter = codegen_utils.get_parameter_printed(stencil.input_vars, stencil.scalar_vars, 'temp_out_0')
-            printer.println('%s_start(%s, iters - i, i >= iters);' % (stencil.app_name, parameter))
-            for i in range(1, stencil.repeat_count - 1):
-                parameter = codegen_utils.get_parameter_printed(['temp_out_%d' % (i-1),], stencil.scalar_vars, 'temp_out_%d' % i)
-                printer.println('%s_mid(%s, iters - i - %d, i + %d > iters);' % (stencil.app_name, parameter, i, i))
-            parameter = codegen_utils.get_parameter_printed(['temp_out_%d' % (stencil.repeat_count-2),], stencil.scalar_vars, stencil.output_var)
-            printer.println('%s_end(%s, iters - i - %d, i + STAGE_COUNT > iters );' % (stencil.app_name, parameter, stencil.repeat_count - 1))
+        parameter = codegen_utils.get_parameter_printed(stencil.input_vars, stencil.scalar_vars, 'temp_out_0')
+        printer.println('.invoke(%s_start, %s, iters, 0)' % (stencil.app_name, parameter))
+        for i in range(1, stencil.repeat_count - 1):
+            parameter = codegen_utils.get_parameter_printed(['temp_out_%d' % (i-1),], stencil.scalar_vars, 'temp_out_%d' % i)
+            printer.println('.invoke(%s_mid, %s, iters, %d)' % (stencil.app_name, parameter, i))
+        parameter = codegen_utils.get_parameter_printed(['temp_out_%d' % (stencil.repeat_count-2),], stencil.scalar_vars, stencil.output_var)
+        printer.println('.invoke(%s_end, %s, iters, %d);' % (stencil.app_name, parameter, stencil.repeat_count - 1))
     else:
-        with printer.for_('int i = 0', 'i < iters', 'i+=STAGE_COUNT'):
-            parameter = codegen_utils.get_parameter_printed(stencil.input_vars, stencil.scalar_vars, 'temp_out_0')
-            printer.println('%s_start(%s, STAGE_COUNT, i >= iters);' % (stencil.app_name, parameter))
-            for i in range(1, stencil.repeat_count - 1):
-                parameter = codegen_utils.get_parameter_printed(['temp_out_%d' % (i-1),], stencil.scalar_vars, 'temp_out_%d' % i)
-                printer.println('%s_mid(%s, STAGE_COUNT - %d, i + %d > iters);' % (stencil.app_name, parameter, i, i))
-            parameter = codegen_utils.get_parameter_printed(['temp_out_%d' % (stencil.repeat_count-2),], stencil.scalar_vars, stencil.output_var)
-            printer.println('%s_end(%s, STAGE_COUNT - %d, i + STAGE_COUNT > iters );' % (stencil.app_name, parameter, stencil.repeat_count - 1))
+        parameter = codegen_utils.get_parameter_printed(stencil.input_vars, stencil.scalar_vars, 'temp_out_0')
+        printer.println('.invoke(%s_start, %s, iters, 0)' % (stencil.app_name, parameter))
+        for i in range(1, stencil.repeat_count - 1):
+            parameter = codegen_utils.get_parameter_printed(['temp_out_%d' % (i-1),], stencil.scalar_vars, 'temp_out_%d' % i)
+            printer.println('.invoke(%s_mid, %s, iters, %d)' % (stencil.app_name, parameter, i))
+        parameter = codegen_utils.get_parameter_printed(['temp_out_%d' % (stencil.repeat_count-2),], stencil.scalar_vars, stencil.output_var)
+        printer.println('.invoke(%s_end, %s, iters, %d);' % (stencil.app_name, parameter, stencil.repeat_count - 1))
+    printer.un_indent()
       
     printer.println('return;')
     printer.un_scope()
