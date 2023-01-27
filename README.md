@@ -16,7 +16,7 @@ git clone https://github.com/SFU-HiAccel/SASA.git
 		+ Xilinx Alveo U280 - HBM2-based FPGA
 2. Software tools:
 	+ HLS tool:
-		+ Vitis 2020.1, 2021.1 or 2021.2
+		+ Vitis 2020.2, 2021.1 or 2021.2
 		+ Xilinx Runtime (XRT) corresponding version with Vitis
 	+ Python 3.6+
 	+ [TAPA](https://github.com/UCLA-VAST/tapa)
@@ -56,7 +56,7 @@ SASA takes high-level DSL description as inputs, automatically explores the best
 	+ Process HLS synthesis
 		+ Run: `source generate_xo.sh`
 	+ Generate bitstream
-		+ Run: `source generate_bitstream.sh
+		+ Run: `source generate_bitstream.sh`
 	+ Generate host code
 		+ Run: `g++ -o stencil -O2 stencil.cpp host.cpp -ltapa -lfrt -lglog -lgflags -lOpenCL`
 
@@ -67,5 +67,5 @@ SASA takes high-level DSL description as inputs, automatically explores the best
 ## Contact
 + [Xingyu Tian](http://www.sfu.ca/~xingyut/), Phd Student 
 + HiAccel Lab, Simon Fraser University (SFU)
-+ Supervisor: [Dr. Zhenman Fang] (http://www.sfu.ca/~zhenman/group.html)
++ Supervisor: [Dr. Zhenman Fang](http://www.sfu.ca/~zhenman/group.html)
 + Email: xingyu_tian@sfu.ca
