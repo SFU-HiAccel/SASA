@@ -1,7 +1,7 @@
 # SASA
-SASA is a scalable and automatic stencil acceleration framework on modern HBM-based FPGAs. It automatically parses a stencil DSL, exploits the best spatial and temporal parallelism configuration on cloud FPGA platforms, and generates the optimal FPGA design in Vitis HLS with TAPA-based floorplanning optimization. If you use SASA in your research, please cite our paper:
+SASA is a scalable and automatic stencil acceleration framework on modern HBM-based FPGAs. It automatically parses a stencil DSL, exploits the best hybrid spatial and temporal parallelism configuration on an HBM-based FPGA, and generates the optimal FPGA design in Vitis HLS with TAPA/AutoBridge-based floorplanning optimization. If you use SASA in your research, please cite our paper:
 
-> Xingyu Tian, Zhifan Ye, Alec Lu, Licheng Guo, Yuze Chi, and Zhenman Fang. 2022. SASA: A Scalable and Automatic Stencil Acceleration Framework for Optimized Hybrid Spatial and Temporal Parallelism on HBM-based FPGAs. Accepted by ACM Transactions on Reconfigurable Technology and Systems (TRETS 2022).
+> Xingyu Tian, Zhifan Ye, Alec Lu, Licheng Guo, Yuze Chi, and Zhenman Fang. 2022. SASA: A Scalable and Automatic Stencil Acceleration Framework for Optimized Hybrid Spatial and Temporal Parallelism on HBM-based FPGAs. Accepted by ACM Transactions on Reconfigurable Technology and Systems (TRETS 2023).
 
 ## Download 
 
@@ -65,7 +65,7 @@ SASA takes high-level DSL description as inputs, automatically explores the best
 
 
 ## Contact
-+ [Xingyu Tian](http://www.sfu.ca/~xingyut/), Phd Student 
++ [Xingyu Tian](http://www.sfu.ca/~xingyut/), PhD Student 
 + HiAccel Lab, Simon Fraser University (SFU)
 + Supervisor: [Dr. Zhenman Fang](http://www.sfu.ca/~zhenman/group.html)
 + Email: xingyu_tian@sfu.ca
