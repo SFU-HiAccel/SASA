@@ -50,18 +50,19 @@ SASA takes high-level DSL description as inputs, automatically explores the best
 1. Generate stencil design with the best optimization: 
 	+ Run: `python3 exploration.py --src stencil.dsl`
 
-2. Generate custmized stencil design
+2. Generate customized stencil design
 	+ Generate the both host code and kenrel code
-		+ Run:  `python codgen.py --src stencil.dsl`
+		+ Run:  `python3 codgen.py --src stencil.dsl`
 	+ Process HLS synthesis
 		+ Run: `source generate_xo.sh`
 	+ Generate bitstream
 		+ Run: `source generate_bitstream.sh`
-	+ Generate host code
+	+ Compile host code
 		+ Run: `g++ -o stencil -O2 stencil.cpp host.cpp -ltapa -lfrt -lglog -lgflags -lOpenCL`
 
 3. Execute on hardware
 	+ Run: `./stencil --bitstream=stencil.$platform.hw.xclbin`
+    + E.g. $platform = xilinx_u280_xdma_201920_3
 
 
 ## Contact
