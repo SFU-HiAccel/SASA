@@ -3,6 +3,8 @@ SASA is a scalable and automatic stencil acceleration framework on modern HBM-ba
 
 > Xingyu Tian, Zhifan Ye, Alec Lu, Licheng Guo, Yuze Chi, and Zhenman Fang. 2022. SASA: A Scalable and Automatic Stencil Acceleration Framework for Optimized Hybrid Spatial and Temporal Parallelism on HBM-based FPGAs. Accepted by ACM Transactions on Reconfigurable Technology and Systems (TRETS 2023).
 
+![flowchart](./flowchart.png)
+
 ## Download 
 
 git clone https://github.com/SFU-HiAccel/SASA.git
@@ -51,7 +53,7 @@ SASA takes high-level DSL description as inputs, automatically explores the best
 	+ Run: `python3 exploration.py --src stencil.dsl`
 
 2. Generate customized stencil design
-	+ Generate the both host code and kenrel code
+	+ Generate the both host code and kenrel code in Vitis HLS
 		+ Run:  `python3 codgen.py --src stencil.dsl`
 	+ Process HLS synthesis
 		+ Run: `source generate_xo.sh`
